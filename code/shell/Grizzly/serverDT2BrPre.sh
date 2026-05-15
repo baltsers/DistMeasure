@@ -1,0 +1,12 @@
+#!/bin/bash
+ROOT=/home/xqfu
+MAINCP=".:/home/xqfu/grizzly/DT2BrPre:/home/xqfu/DUA7.jar:/home/xqfu/DistTaint.jar"
+
+echo $MAINCP
+starttime=`date +%s%N | cut -b1-13`
+java -cp ${MAINCP} EchoServer
+stoptime=`date +%s%N | cut -b1-13`
+echo "StaticAnalysisTime for ${ver}${seed} elapsed: " `expr $stoptime - $starttime` milliseconds 
+
+
+

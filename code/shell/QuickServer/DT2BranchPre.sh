@@ -1,0 +1,68 @@
+#!/bin/bash
+if [ $# -lt 0 ];then
+	echo "Usage: $0 "
+	exit 1
+fi
+
+source ./qs_global.sh
+MAINCP=".:/home/xqfu/libs/soot-trunk.jar:/home/xqfu/DUA/bin:/home/xqfu/DistTaint/bin"
+echo $MAINCP
+SOOTCP=".:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:$subjectloc/QuickServer:$subjectloc/echoserver:$subjectloc/java:$ROOT/DistTaint/bin"
+for i in $subjectloc/lib/*.jar;
+do
+	SOOTCP=$SOOTCP:$i
+done
+
+suffix="vd"
+
+LOGDIR=out-DT2BrPre
+mkdir -p $LOGDIR
+logout=$LOGDIR/instr-$suffix.out
+logerr=$LOGDIR/instr-$suffix.err
+
+OUTDIR=$subjectloc/DT2BrPre
+mkdir -p $OUTDIR
+
+starttime=`date +%s%N | cut -b1-13`
+
+	#-allowphantom \
+   	#-duaverbose \
+	#-wrapTryCatch \
+	#-dumpJimple \
+	#-statUncaught \
+	#-perthread \
+	#-syncnio \
+	#-main-class $DRIVERCLASS \
+	#-entry:$DRIVERCLASS \
+	#-syncnio \
+	#-main-class $DRIVERCLASS \
+	#-entry:$DRIVERCLASS \
+	
+java -Xmx100g -ea -cp ${MAINCP} disttaint.dt2BranchPre \
+	-w -cp ${SOOTCP} \
+	-p cg verbose:false,implicit-entry:false -p cg.spark verbose:false,on-fly-cg:true,rta:false  \
+	-f c -d "$OUTDIR" -brinstr:off -duainstr:off \
+	-process-dir $subjectloc/echoserver \
+	-process-dir $subjectloc/QuickServer \
+    -duaverbose \
+	-slicectxinsens \
+   	-brinstr:off -duainstr:off  \
+	-wrapTryCatch \
+        -intraCD \
+        -interCD \
+        -exInterCD \
+	-allowphantom \
+	-serializeVTG \
+	1>out-DT2BrPre/instr.out 2>out-DT2BrPre/instr.err
+
+stoptime=`date +%s%N | cut -b1-13`
+echo "StaticAnalysisTime for $suffix elapsed: " `expr $stoptime - $starttime` milliseconds
+#echo "Instrumentation done, now copying resources required for running."
+
+
+echo "Running finished."
+exit 0
+
+
+# hcai vim :set ts=4 tw=4 tws=4
+
